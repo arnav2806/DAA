@@ -1,0 +1,97 @@
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Condition;
+
+public class program_11 {
+
+    private final Lock[] locks;
+    private final Condition[] conditions;
+    private final int numPhilosophers;
+
+    public program_11(int numPhilosophers) {
+        this.numPhilosophers = numPhilosophers;
+        this.locks = new Lock[numPhilosophers];
+        this.conditions = new Condition[numPhilosophers];
+
+        for (int i = 0; i < numPhilosophers; i++) {
+            locks[i] = new ReentrantLock();
+            conditions[i] = locks[i].newCondition();
+        }
+    }
+
+    // Philosopher thread
+    class Philosopher extends Thread {
+        private final int id;
+
+        public Philosopher(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                think();
+                eat();
+            }
+        }
+
+        private void think() {
+            System.out.println("Philosopher " + id + " is thinking.");
+            try {
+                Thread.sleep((long) (Math.random() * 1000));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        private void eat() {
+            // Try to acquire locks for both forks (left and right)
+            Lock leftFork = locks[id];
+            Lock rightFork = locks[(id + 1) % numPhilosophers];
+
+            // To avoid deadlock, try to acquire locks in a fixed order
+            if (id % 2 == 0) {
+                leftFork.lock();
+                try {
+                    rightFork.lock();
+                    try {
+                        System.out.println("Philosopher " + id + " is eating.");
+                        Thread.sleep((long) (Math.random() * 1000));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        rightFork.unlock();
+                    }
+                } finally {
+                    leftFork.unlock();
+                }
+            } else {
+                rightFork.lock();
+                try {
+                    leftFork.lock();
+                    try {
+                        System.out.println("Philosopher " + id + " is eating.");
+                        Thread.sleep((long) (Math.random() * 1000));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        leftFork.unlock();
+                    }
+                } finally {
+                    rightFork.unlock();
+                }
+            }
+        }
+    }
+
+    // Main method to create philosophers and start their threads
+    public static void main(String[] args) {
+        int numPhilosophers = 5;  // Example: 5 philosophers
+        program_11 dp = new program_11(numPhilosophers);
+
+        // Create philosopher threads
+        for (int i = 0; i < numPhilosophers; i++) {
+            dp.new Philosopher(i).start();
+        }
+    }
+}
