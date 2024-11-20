@@ -1,0 +1,108 @@
+import java.util.*;
+
+class Node {
+    int[] path;       // Current path (cities visited so far)
+    boolean[] visited; // Boolean array to mark visited cities
+    double cost;      // Total cost of the current path
+    double bound;     // Lower bound estimate (could be MST or other heuristics)
+
+    public Node(int numCities) {
+        this.path = new int[numCities];
+        this.visited = new boolean[numCities];
+        this.cost = 0;
+        this.bound = 0;
+        Arrays.fill(visited, false);
+    }
+}
+
+public class TSPBranchAndBound {
+    
+    // Function to generate the start node for TSP
+    public Node generateStartNode(int numCities) {
+        Node startNode = new Node(numCities);
+        startNode.visited[0] = true;  // Assume starting city is the first city (index 0)
+        startNode.path[0] = 0;        // Path starts from city 0
+        startNode.cost = 0;           // Initial cost is 0
+        startNode.bound = calculateLowerBound(startNode, numCities);
+        return startNode;
+    }
+
+    // Function to calculate the lower bound for a given node (using MST or other heuristic)
+    public double calculateLowerBound(Node node, int numCities) {
+        // A simple heuristic for lower bound (could be MST or another heuristic)
+        // Here, we assume a very basic bound (not the best optimized for TSP)
+        double bound = 0;
+        for (int i = 0; i < numCities; i++) {
+            for (int j = i + 1; j < numCities; j++) {
+                bound += 1;  // Placeholder for heuristic calculation
+            }
+        }
+        return bound;
+    }
+
+    // Function to generate all the children of a given node
+    public List<Node> generateChildren(Node parent, int numCities, double[][] distanceMatrix) {
+        List<Node> children = new ArrayList<>();
+        for (int city = 0; city < numCities; city++) {
+            if (!parent.visited[city]) {  // If the city hasn't been visited yet
+                Node child = new Node(numCities);
+                System.arraycopy(parent.path, 0, child.path, 0, numCities);
+                System.arraycopy(parent.visited, 0, child.visited, 0, numCities);
+                
+                child.path[parent.path.length] = city; // Add the city to the path
+                child.visited[city] = true; // Mark the city as visited
+                child.cost = parent.cost + distanceMatrix[parent.path[parent.path.length - 1]][city]; // Update cost
+                child.bound = calculateLowerBound(child, numCities); // Update the bound for the child node
+                children.add(child);
+            }
+        }
+        return children;
+    }
+
+    // Function to check if the given node is a leaf node (all cities are visited)
+    public boolean isLeafNode(Node node, int numCities) {
+        for (int i = 1; i < numCities; i++) {
+            if (!node.visited[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        int numCities = 4;  // Example with 4 cities
+        double[][] distanceMatrix = {
+            {0, 10, 15, 20},
+            {10, 0, 35, 25},
+            {15, 35, 0, 30},
+            {20, 25, 30, 0}
+        };
+
+        TSPBranchAndBound tsp = new TSPBranchAndBound();
+        Node startNode = tsp.generateStartNode(numCities);
+        double bestCost = Double.MAX_VALUE;
+        
+        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingDouble(n -> n.bound));
+        pq.add(startNode);
+        
+        while (!pq.isEmpty()) {
+            Node node = pq.poll();
+            
+            if (tsp.isLeafNode(node, numCities)) {
+                // Check if the leaf node has a better cost
+                if (node.cost < bestCost) {
+                    bestCost = node.cost;
+                }
+            } else {
+                List<Node> children = tsp.generateChildren(node, numCities, distanceMatrix);
+                for (Node child : children) {
+                    if (child.bound < bestCost) {  // Pruning
+                        pq.add(child);
+                    }
+                }
+            }
+        }
+        
+        System.out.println("Best cost found: " + bestCost);
+    }
+}
