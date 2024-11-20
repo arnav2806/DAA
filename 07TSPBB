@@ -1,0 +1,46 @@
+public class program_7 {
+    static final int INF = Integer.MAX_VALUE;
+
+    public static int TSPBranchBound(int[][] graph){
+        int n = graph.length;
+
+        boolean[] visited = new boolean[n];
+        //mark first city visited
+        visited[0] = true;
+
+        //intial cost
+        int minCost = TSPUtil(graph,visited,0,n,1,0); //initiated cost as 0 (last parameter in arguement)
+        return minCost;
+    }
+
+    public static int TSPUtil(int[][] graph,boolean[] visited,int currPos,int n,int count,int cost){
+        if(count == n && graph[currPos][0] > 0){
+            return cost + graph[currPos][0];
+        }
+
+        int minCost = INF;
+
+        for(int i=0;i<n;i++){
+            if(!visited[i] && graph[currPos][i] > 0){
+                visited[i] = true;
+                int tempCost = TSPUtil(graph,visited,i,n,count++,cost + graph[currPos][i]);
+                minCost = Math.min(minCost,tempCost);
+                //backtrack
+                visited[i] = false;
+            }
+        }
+        return minCost;
+    }
+
+    public static void main(String[] args){
+        int[][] graph = {{0,10,15,20},
+                         {5,0,9,10},
+                         {6,13,0,12},
+                         {8,8,9,0},
+                        };
+
+        int result = TSPBranchBound(graph);
+
+        System.out.println("The total minimum cost extracted from this algorithm is : " + result);
+    }
+}
