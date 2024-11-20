@@ -1,0 +1,70 @@
+public class program_12 {
+
+    static class MultiplyTask extends Thread {
+        private final int[][] A;
+        private final int[][] B;
+        private final int[][] C;
+        private final int row;
+        private final int col;
+
+        public MultiplyTask(int[][] A, int[][] B, int[][] C, int row, int col) {
+            this.A = A;
+            this.B = B;
+            this.C = C;
+            this.row = row;
+            this.col = col;
+        }
+
+        @Override
+        public void run() {
+            C[row][col] = 0;
+            for (int k = 0; k < A.length; k++) {
+                C[row][col] += A[row][k] * B[k][col];
+            }
+        }
+    }
+
+    public static void multiplyMatrices(int[][] A, int[][] B, int[][] C) {
+        int n = A.length;
+        Thread[] threads = new Thread[n * n];
+
+        int threadCount = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                threads[threadCount] = new MultiplyTask(A, B, C, i, j);
+                threads[threadCount].start();
+                threadCount++;
+            }
+        }
+
+        // Wait for all threads to complete
+        for (int i = 0; i < n * n; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = 1000; // Size of the matrix
+        int[][] A = new int[n][n];
+        int[][] B = new int[n][n];
+        int[][] C = new int[n][n];
+
+        // Initialize matrices A and B
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                A[i][j] = (int) (Math.random() * 10);
+                B[i][j] = (int) (Math.random() * 10);
+            }
+        }
+
+        long startTime = System.nanoTime();
+        multiplyMatrices(A, B, C);
+        long endTime = System.nanoTime();
+
+        System.out.println("Time taken for multithreaded matrix multiplication: " + (endTime - startTime) / 1e6 + " ms");
+    }
+}
