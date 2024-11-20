@@ -108,3 +108,19 @@ public class Main {
         // System.out.println("Sorted Array by Mergesort: " + Arrays.toString(dataForMergeSort));
     }
 }
+/*
+Time Complexity
+QuickSort:
+Best Case: 𝑂(nlogn) - When the pivot divides the array into two nearly equal parts.
+Average Case: O(nlogn) — Typical scenario with random data.
+Worst Case: O(n2) When the pivot divides the array very unevenly (e.g., all elements are already sorted).
+Merge Sort:
+time:O(n log n)
+Space Complexity
+QuickSort:
+Space Used: 
+𝑂(logn) - Due to recursive calls on the stack.
+In-place: Yes, as no auxiliary arrays are used.
+Merge Sort:
+Space Used: 
+𝑂(𝑛) - Requires additional space for temporary arrays.*/
