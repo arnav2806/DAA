@@ -1,0 +1,93 @@
+public class Main {
+
+    // Method to print the board
+    static void printSolution(int board[][], int n) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    // Method to check if a queen can be placed at board[row][col]
+    static boolean isSafe(int board[][], int row, int col, int n) {
+        // Check column
+        for (int i = 0; i < row; i++) {
+            if (board[i][col] == 1) {
+                return false;
+            }
+        }
+
+        // Check upper-left diagonal
+        for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+            if (board[i][j] == 1) {
+                return false;
+            }
+        }
+
+        // Check upper-right diagonal
+        for (int i = row, j = col; i >= 0 && j < n; i--, j++) {
+            if (board[i][j] == 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Method to solve N Queens problem using Backtracking
+    static boolean solveNQueensUtil(int board[][], int row, int n) {
+        // If all queens are placed
+        if (row >= n) {
+            return true;
+        }
+
+        // Try placing this queen in all columns one by one
+        for (int col = 0; col < n; col++) {
+            if (isSafe(board, row, col, n)) {
+                // Place queen
+                board[row][col] = 1;
+
+                // Recur to place rest of the queens
+                if (solveNQueensUtil(board, row + 1, n)) {
+                    return true;
+                }
+
+                // If placing queen in board[row][col] doesn't lead to a solution, backtrack
+                board[row][col] = 0; // Remove queen (backtrack)
+            }
+        }
+
+        // If the queen can not be placed in any column in this row, return false
+        return false;
+    }
+
+    // Solves the N Queens problem using Backtracking. It mainly uses solveNQueensUtil()
+    static void solveNQueens(int n) {
+        int board[][] = new int[n][n];
+
+        // Start solving from the first row
+        if (!solveNQueensUtil(board, 0, n)) {
+            System.out.println("Solution does not exist");
+            return;
+        }
+
+        // Print the solution
+        printSolution(board, n);
+    }
+
+    public static void main(String[] args) {
+        int[] sizes = {4, 5, 6, 7, 8};
+
+        for (int n : sizes) {
+            long startTime = System.nanoTime();
+            System.out.println("Solving for " + n + " queens:");
+            solveNQueens(n);
+            long endTime = System.nanoTime();
+            long duration = endTime - startTime;
+            System.out.println("Time taken for " + n + " queens: " + duration + " nanoseconds\n");
+        }
+    }
+}
+
