@@ -1,0 +1,133 @@
+import java.util.Arrays;
+import java.util.Random;
+import java.util.*;
+
+public class program_4 {
+
+    //PART A : MERGESORT IMPLEMENTATION AND ITS BESTCASE AND WORSTCASE TIME CHECK
+    public static void merge(int[] array,int low,int mid,int high){
+        int leftArraySize = mid-low+1;
+        int rightArraySize = high-mid;
+
+        int[] left = new int[leftArraySize];
+        int[] right = new int[rightArraySize];
+
+        for(int i=0;i<leftArraySize;i++){
+            left[i] = array[low+i];
+        }
+
+        for(int i=0;i<rightArraySize;i++){
+            right[i] = array[mid+1+i];
+        }
+
+        int i=0,j=0;
+        int k=0;
+
+        while(i < leftArraySize && j < rightArraySize){
+            if(left[i] <= right[j]){
+                array[k++] = left[i];
+                i++;
+            }
+            else{
+                array[k++] = right[j];
+                j++;
+            }
+        }
+
+        while(i < leftArraySize){
+            array[k++] = left[i++];
+        }
+
+        while(j < rightArraySize){
+            array[k++] = right[j++];
+        }
+    }
+
+    public static void mergesort(int[] array,int low,int high){
+        if(low < high){
+            int mid = (low+high)/2;
+            mergesort(array,low,mid-1);
+            mergesort(array,mid+1,high);
+            merge(array,low,mid,high);
+        }
+    }
+
+    public static int[] generateBestCase(int n){
+        int[] best_case = new int[n];
+        for(int i=0;i<n;i++){
+            best_case[i] = i;
+        }
+        return best_case;
+    }
+
+    public static int[] generateWorstCase(int n){
+        int[] worst_case = new int[n];
+        for(int i=0;i<n;i++){
+            worst_case[i] = n-1-i;
+        }
+        return worst_case;
+    }
+
+    public static void compareTime(int n){
+        int[] bestcase = generateBestCase(n);
+        int[] worstcase = generateWorstCase(n);
+
+        //time for bestcase
+        long start_time = System.nanoTime();
+        mergesort(bestcase,0,bestcase.length-1);
+        long end_time = System.nanoTime();
+        long best_caseTime = end_time - start_time;
+
+        //time for worst_case
+        start_time = System.nanoTime();
+        mergesort(worstcase,0,worstcase.length-1);
+        end_time = System.nanoTime();
+        long worst_caseTime = end_time - start_time;
+
+        System.out.println("Best case time is : " + best_caseTime);
+        System.out.println("Worst case time is : " + worst_caseTime);
+    }
+
+    //PART B: TSP CROSSOVER
+    public static List<Integer> generate_chromosome(int n){
+        List<Integer> chromosome = new ArrayList<>();
+        for(int i=0;i<n;i++){
+            chromosome.add(i);
+        }
+        Collections.shuffle(chromosome);
+        return chromosome;
+    }
+
+    public static List<Integer> crossover_chromosome(List<Integer> parent1,List<Integer> parent2){
+        Random rand = new Random();
+        int crossoverpoint = rand.nextInt(parent1.size());
+
+        List<Integer> offspring = new ArrayList<>(parent1.subList(0,crossoverpoint));
+
+        for(int city:parent2){
+            if(!offspring.contains(city)){
+                offspring.add(city);
+            }
+        }
+
+        return offspring;
+     }
+
+     //main func
+    public static void main(String[] args){
+        int n = 500;
+        System.out.println("Merge sort time comparsion : ");
+        compareTime(n);
+
+        System.out.println("TSP crossover example : ");
+        int TSP_cities = 10;
+        List<Integer> parent1 = generate_chromosome(TSP_cities);
+        List<Integer> parent2 = generate_chromosome(TSP_cities);
+
+        System.out.println("parent1 : " + parent1);
+        System.out.println("parent2 : " + parent2);
+
+        List<Integer> offspring = crossover_chromosome(parent1,parent2);
+        System.out.println("Offspring created from parent1 & parent2 is : " + offspring);
+    }
+}
