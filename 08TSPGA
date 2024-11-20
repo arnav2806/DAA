@@ -1,0 +1,120 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+public class program_8 {
+    static int[][] distances = {
+            {0, 10, 15, 20},
+            {10, 0, 35, 25},
+            {15, 35, 0, 30},
+            {20, 25, 30, 0}
+    };
+
+    static int populationSize = 50;
+    static int generations = 100;
+    static double mutationRate = 0.1;
+
+    public static List<Integer> initializeRoute(int n) {
+        List<Integer> route = new ArrayList<>();
+        for (int i = 0; i < n; i++) route.add(i);
+        Collections.shuffle(route);
+        return route;
+    }
+
+    public static int calculateCost(List<Integer> route) {
+        int cost = 0;
+        for (int i = 0; i < route.size() - 1; i++) {
+            cost += distances[route.get(i)][route.get(i + 1)];
+        }
+        cost += distances[route.get(route.size() - 1)][route.get(0)]; // Return to start
+        return cost;
+    }
+
+    public static List<List<Integer>> generatePopulation(int n) {
+        List<List<Integer>> population = new ArrayList<>();
+        for (int i = 0; i < populationSize; i++) {
+            population.add(initializeRoute(n));
+        }
+        return population;
+    }
+
+    public static List<Integer> crossover(List<Integer> parent1, List<Integer> parent2) {
+        int n = parent1.size();
+        List<Integer> child = new ArrayList<>(Collections.nCopies(n, -1));
+        Random rand = new Random();
+
+        // Select crossover range
+        int start = rand.nextInt(n);
+        int end = rand.nextInt(n - start) + start;
+
+        // Copy from parent1
+        for (int i = start; i <= end; i++) {
+            child.set(i, parent1.get(i));
+        }
+
+        // Fill the rest from parent2
+        int current = 0;
+        for (int i = 0; i < n; i++) {
+            if (!child.contains(parent2.get(i))) {
+                while (child.get(current) != -1) current++;
+                child.set(current, parent2.get(i));
+            }
+        }
+
+        return child;
+    }
+
+    public static void mutate(List<Integer> route) {
+        Random rand = new Random();
+        for (int i = 0; i < route.size(); i++) {
+            if (rand.nextDouble() < mutationRate) {
+                int j = rand.nextInt(route.size());
+                Collections.swap(route, i, j);
+            }
+        }
+    }
+
+    public static List<Integer> findBest(List<List<Integer>> population) {
+        List<Integer> bestRoute = population.get(0);
+        int minCost = calculateCost(bestRoute);
+
+        for (List<Integer> route : population) {
+            int cost = calculateCost(route);
+            if (cost < minCost) {
+                bestRoute = route;
+                minCost = cost;
+            }
+        }
+
+        return bestRoute;
+    }
+
+    public static void main(String[] args) {
+        int n = distances.length;
+
+        List<List<Integer>> population = generatePopulation(n);
+
+        for (int gen = 0; gen < generations; gen++) {
+            List<List<Integer>> newPopulation = new ArrayList<>();
+
+            for (int i = 0; i < populationSize; i++) {
+                Random rand = new Random();
+                List<Integer> parent1 = population.get(rand.nextInt(populationSize));
+                List<Integer> parent2 = population.get(rand.nextInt(populationSize));
+
+                List<Integer> child = crossover(parent1, parent2);
+                mutate(child);
+                newPopulation.add(child);
+            }
+
+            population = newPopulation;
+        }
+
+        List<Integer> bestRoute = findBest(population);
+        int bestCost = calculateCost(bestRoute);
+
+        System.out.println("Best route: " + bestRoute);
+        System.out.println("Cost of best route: " + bestCost);
+    }
+}
