@@ -1,0 +1,33 @@
+public class Main {
+
+    public static int knapsack(int capacity, int[] weights, int[] profits, int n) {
+        // Create a DP table
+        int[][] dp = new int[n + 1][capacity + 1];
+
+        // Build table dp[][] in a bottom-up manner
+        for (int i = 1; i <= n; i++) {
+            for (int w = 1; w <= capacity; w++) {
+                // If the current item's weight is less than or equal to capacity
+                if (weights[i - 1] <= w) {
+                    dp[i][w] = Math.max(dp[i - 1][w], profits[i - 1] + dp[i - 1][w - weights[i - 1]]);
+                } else {
+                    dp[i][w] = dp[i - 1][w];
+                }
+            }
+        }
+
+        // The maximum profit is stored in dp[n][capacity]
+        return dp[n][capacity];
+    }
+
+    public static void main(String[] args) {
+        int m = 15; // Maximum weight capacity
+        int[] weights = {2, 4, 6, 9};
+        int[] profits = {10, 10, 12, 18};
+        int n = weights.length;
+
+        int maxProfit = knapsack(m, weights, profits, n);
+
+        System.out.println("Maximum Profit: " + maxProfit);
+    }
+}
