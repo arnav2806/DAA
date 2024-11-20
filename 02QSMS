@@ -1,110 +1,105 @@
-import java.util.Random;
 import java.util.Arrays;
+import java.util.Random;
 
-class QuickSort {
-    public static void quickSort(int[] array, int low, int high) {
-        if (low < high) {
-            int pi = partition(array, low, high);
-            quickSort(array, low, pi - 1);
-            quickSort(array, pi + 1, high);
+public class program_2 {
+    public static void main(String[] args){
+        int[] data = generateRandomArray(1000);
+
+        //PART A: quicksort time extraction
+        int[] quickSort_Data = Arrays.copyOf(data,data.length);
+        long start_time = System.nanoTime();
+        quicksort(quickSort_Data,0,quickSort_Data.length-1);
+        long end_time = System.nanoTime();
+        long quickSort_time = end_time - start_time;
+        System.out.println("Time required for quick Sort : " + quickSort_time);
+
+        int[] randomized_quickSort_Data = Arrays.copyOf(data,data.length-1);
+        start_time = System.nanoTime();
+        randomized_quickSort(randomized_quickSort_Data,0,randomized_quickSort_Data.length-1);
+        end_time = System.nanoTime();
+        long randomized_quickSort_time = end_time - start_time;
+        System.out.println("Time required for randomized quick sort : " + randomized_quickSort_time);
+    }
+
+    public static int[] generateRandomArray(int size){
+        Random rand = new Random();
+        int[] array = new int[size];
+        for(int i=0;i<size;i++){
+            array[i] = rand.nextInt(1000);
+        }
+        return array;
+    }
+
+    //QUICKSORT IMPLEMENTATION
+    public static void quicksort(int[] array,int low,int high){
+        if(low < high){
+            int partition_index = partition(array,low,high);
+            quicksort(array,low,partition_index-1);
+            quicksort(array,partition_index+1,high);
         }
     }
 
-    private static int partition(int[] array, int low, int high) {
+    public static int partition(int[] array,int low,int high){
         int pivot = array[high];
-        int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (array[j] < pivot) {
+        int i = low-1;
+        for(int j=low;j<high;j++){
+            if(array[j] <= pivot){
                 i++;
-                swap(array, i, j);
+                swap(array,i,j);
             }
         }
-        swap(array, i + 1, high);
-        return i + 1;
+        swap(array,i+1,high);
+        return i+1;
     }
 
-    private static void swap(int[] array, int i, int j) {
+    //RANDOMIZED QUICKSORT IMPLEMENTATION
+    public static void randomized_quickSort(int[] array,int low,int high){
+        if(low < high){
+            Random rand = new Random();
+            int random_pivotIndex = low + rand.nextInt(high-low+1);
+            swap(array,high,random_pivotIndex);
+            int partition_index = partition(array,low,high);
+            randomized_quickSort(array,low,partition_index-1);
+            randomized_quickSort(array,partition_index+1,high);
+        }
+    }
+
+
+    public static void swap(int[] array,int i,int j){
         int temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
-    
-}
-class MergeSort {
-    public static void mergeSort(int[] array, int left, int right) {
-        if (left < right) {
-            int mid = left + (right - left) / 2;
-            mergeSort(array, left, mid);
-            mergeSort(array, mid + 1, right);
-            merge(array, left, mid, right);
-        }
-    }
-
-    private static void merge(int[] array, int left, int mid, int right) {
-        int n1 = mid - left + 1;
-        int n2 = right - mid;
-
-        int[] leftArray = new int[n1];
-        int[] rightArray = new int[n2];
-
-        for (int i = 0; i < n1; i++) {
-            leftArray[i] = array[left + i];
-        }
-        for (int j = 0; j < n2; j++) {
-            rightArray[j] = array[mid + 1 + j];
-        }
-
-        int i = 0, j = 0, k = left;
-        while (i < n1 && j < n2) {
-            if (leftArray[i] <= rightArray[j]) {
-                array[k] = leftArray[i];
-                i++;
-            } else {
-                array[k] = rightArray[j];
-                j++;
-            }
-            k++;
-        }
-
-        while (i < n1) {
-            array[k] = leftArray[i];
-            i++;
-            k++;
-        }
-
-        while (j < n2) {
-            array[k] = rightArray[j];
-            j++;
-            k++;
-        }
-    }
 }
 
-public class Main {
-    public static void main(String[] args) {
-        Random random = new Random();
-        int[] data = new int[500];
-        for (int i = 0; i < 500; i++) {
-            data[i] = random.nextInt(1000);
-        }
+//USE-CASES OF RANDOMIZED QUICKSORT
 
-        int[] dataForQuickSort = Arrays.copyOf(data, data.length);
-        int[] dataForMergeSort = Arrays.copyOf(data, data.length);
+//Avoiding Worst-Case Performance: Randomized Quick Sort prevents the worst-case O(n²) time complexity by randomly selecting pivots. This ensures better performance on adversarial inputs.
 
-        // Measure time for Quicksort
-        long startQuickSort = System.nanoTime();
-        QuickSort.quickSort(dataForQuickSort, 0, dataForQuickSort.length - 1);
-        long endQuickSort = System.nanoTime();
-        System.out.println("Time for Quicksort: " + (endQuickSort - startQuickSort) + " ns");
+//Improved Performance on Adversarial Inputs: It performs better on sorted or nearly sorted data by avoiding poor pivot choices. This reduces the likelihood of unbalanced partitions.
 
-        // Measure time for Mergesort
-        long startMergeSort = System.nanoTime();
-        MergeSort.mergeSort(dataForMergeSort, 0, dataForMergeSort.length - 1);
-        long endMergeSort = System.nanoTime();
-        System.out.println("Time for Mergesort: " + (endMergeSort - startMergeSort) + " ns");
+// Guaranteed O(n log n) Average Time Complexity: Randomized Quick Sort guarantees an O(n log n) average time complexity. This is due to random pivot selection that prevents consistently bad partitions.
 
-        // Optional: Uncomment to verify sorted arrays
-        // System.out.println("Sorted Array by Quicksort: " + Arrays.toString(dataForQuickSort));
-        // System.out.println("Sorted Array by Mergesort: " + Arrays.toString(dataForMergeSort));
-    }
-}
+//Simplicity in Implementation: Randomized Quick Sort is easy to implement compared to more complex algorithms like Merge Sort or Heap Sort. It retains the simplicity of the standard Quick Sort algorithm.
+
+//More Efficient for Large Datasets: It is highly efficient for large datasets, offering fast in-place sorting with low space complexity. It’s often quicker than Merge Sort or Heap Sort for large inputs.
+
+//Improved Cache Utilization: Being an in-place algorithm, it benefits from better cache locality. This leads to faster execution, especially for datasets that fit in CPU cache.
+
+//Better Performance in Practice: In practice, Randomized Quick Sort is faster than Merge Sort for most datasets. Its average case is O(n log n) and it performs efficiently for large, real-world inputs.
+/*
+Time Complexity
+QuickSort:
+Best Case: 𝑂(nlogn) - When the pivot divides the array into two nearly equal parts.
+Average Case: O(nlogn) — Typical scenario with random data.
+Worst Case: O(n2) When the pivot divides the array very unevenly (e.g., all elements are already sorted).
+Merge Sort:
+time:O(n log n)
+Space Complexity
+QuickSort:
+Space Used: 
+𝑂(logn) - Due to recursive calls on the stack.
+In-place: Yes, as no auxiliary arrays are used.
+Merge Sort:
+Space Used: 
+𝑂(𝑛) - Requires additional space for temporary arrays.*/
