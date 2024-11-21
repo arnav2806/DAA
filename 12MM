@@ -1,12 +1,14 @@
 public class program_12 {
 
+    // MultiplyTask class extends Thread to perform matrix multiplication in parallel
     static class MultiplyTask extends Thread {
-        private final int[][] A;
-        private final int[][] B;
-        private final int[][] C;
-        private final int row;
-        private final int col;
+        private final int[][] A;  // Matrix A
+        private final int[][] B;  // Matrix B
+        private final int[][] C;  // Resultant matrix C
+        private final int row;    // Row index for which the multiplication is performed
+        private final int col;    // Column index for which the multiplication is performed
 
+        // Constructor to initialize matrices and indices
         public MultiplyTask(int[][] A, int[][] B, int[][] C, int row, int col) {
             this.A = A;
             this.B = B;
@@ -15,56 +17,94 @@ public class program_12 {
             this.col = col;
         }
 
+        // Override run() method to perform the matrix multiplication
         @Override
         public void run() {
+            // Initialize the C[row][col] to 0 before adding the products
             C[row][col] = 0;
+
+            // Perform the dot product of the row of matrix A and column of matrix B
             for (int k = 0; k < A.length; k++) {
                 C[row][col] += A[row][k] * B[k][col];
             }
         }
     }
 
+    // Method to multiply two matrices A and B and store the result in matrix C
     public static void multiplyMatrices(int[][] A, int[][] B, int[][] C) {
-        int n = A.length;
+        int n = A.length;  // Size of the matrix (n x n)
+        
+        // Array of threads to hold the tasks for parallel computation
         Thread[] threads = new Thread[n * n];
 
+        // Loop through each element in the result matrix C
         int threadCount = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
+                // Create a new MultiplyTask for each element in matrix C
                 threads[threadCount] = new MultiplyTask(A, B, C, i, j);
-                threads[threadCount].start();
+                threads[threadCount].start();  // Start the thread to calculate C[i][j]
                 threadCount++;
             }
         }
 
-        // Wait for all threads to complete
+        // Wait for all threads to finish
         for (int i = 0; i < n * n; i++) {
             try {
-                threads[i].join();
+                threads[i].join();  // Wait for each thread to finish its execution
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread().interrupt();  // Handle thread interruption
             }
         }
     }
 
+    // Main method to initialize matrices, perform multiplication, and print time taken
     public static void main(String[] args) {
-        int n = 1000; // Size of the matrix
+        int n = 1000; // Size of the matrix (1000 x 1000)
+
+        // Initialize matrices A, B, and C with size n x n
         int[][] A = new int[n][n];
         int[][] B = new int[n][n];
         int[][] C = new int[n][n];
 
-        // Initialize matrices A and B
+        // Initialize matrices A and B with random values between 0 and 9
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                A[i][j] = (int) (Math.random() * 10);
-                B[i][j] = (int) (Math.random() * 10);
+                A[i][j] = (int) (Math.random() * 10);  // Random values between 0 and 9
+                B[i][j] = (int) (Math.random() * 10);  // Random values between 0 and 9
             }
         }
 
+        // Record the start time of matrix multiplication
         long startTime = System.nanoTime();
+        
+        // Perform the matrix multiplication using multiple threads
         multiplyMatrices(A, B, C);
+
+        // Record the end time of matrix multiplication
         long endTime = System.nanoTime();
 
+        // Print the time taken for the multiplication process
         System.out.println("Time taken for multithreaded matrix multiplication: " + (endTime - startTime) / 1e6 + " ms");
     }
 }
+/*Time Complexity:
+Matrix Multiplication:
+
+For a matrix multiplication, the formula for calculating each element C[i][j] is the dot product of the i-th row of matrix A and the j-th column of matrix B. This involves summing n products for each element in the resultant matrix.
+For an n x n matrix, there are n^2 elements in the result matrix C, and for each element, we perform n multiplications.
+Therefore, the time complexity for this operation is O(n^3). However, with multithreading, we calculate each element of the result in parallel, but since each thread does a fixed amount of work (computing one element of the result), the overall complexity remains O(n^3).
+
+Thread Management:
+
+We create n^2 threads, each performing one multiplication and addition operation. The time complexity for thread management, considering thread creation and synchronization, is still dominated by the matrix multiplication, so it's O(n^3).
+Space Complexity:
+Matrices:
+We store three n x n matrices (A, B, and C), which require O(n^2) space each.
+Threads:
+We create n^2 threads to calculate the elements of the result matrix C. Each thread occupies a small constant amount of space, but the dominant factor is the space used for the matrices.
+Total Space Complexity:
+The total space complexity is dominated by the storage of the matrices and threads, resulting in O(n^2) space complexity.
+Summary:
+Time Complexity: O(n^3) due to the nested loops and matrix multiplication.
+Space Complexity: O(n^2) for storing the matrices and threads*/
