@@ -1,76 +1,106 @@
 import java.util.*;
 
 class Node {
-    int[] path;       // Current path (cities visited so far)
-    boolean[] visited; // Boolean array to mark visited cities
-    double cost;      // Total cost of the current path
-    double bound;     // Lower bound estimate (could be MST or other heuristics)
+    int[] path;         // Current path (cities visited so far)
+    boolean[] visited;  // Boolean array to mark visited cities
+    double cost;        // Total cost of the current path
+    double bound;       // Lower bound estimate
+    int pathLength;     // Number of cities in the path
 
+    // Constructor to initialize the node
     public Node(int numCities) {
-        this.path = new int[numCities];
+        this.path = new int[numCities + 1]; // +1 to include the return to starting city
         this.visited = new boolean[numCities];
         this.cost = 0;
         this.bound = 0;
-        Arrays.fill(visited, false);
+        this.pathLength = 1; // Start with just the starting city
     }
 }
 
 public class TSPBranchAndBound {
-    
-    // Function to generate the start node for TSP
-    public Node generateStartNode(int numCities) {
-        Node startNode = new Node(numCities);
-        startNode.visited[0] = true;  // Assume starting city is the first city (index 0)
-        startNode.path[0] = 0;        // Path starts from city 0
-        startNode.cost = 0;           // Initial cost is 0
-        startNode.bound = calculateLowerBound(startNode, numCities);
-        return startNode;
-    }
+    /**
+     * Calculate the lower bound for the given node using a heuristic.
+     * The heuristic used is the sum of the two smallest edges for each unvisited city.
+     *
+     * @param node          Current node
+     * @param numCities     Total number of cities
+     * @param distanceMatrix Adjacency matrix with distances between cities
+     * @return Estimated lower bound for the node
+     */
+    public double calculateLowerBound(Node node, int numCities, double[][] distanceMatrix) {
+        double bound = node.cost;
 
-    // Function to calculate the lower bound for a given node (using MST or other heuristic)
-    public double calculateLowerBound(Node node, int numCities) {
-        // A simple heuristic for lower bound (could be MST or another heuristic)
-        // Here, we assume a very basic bound (not the best optimized for TSP)
-        double bound = 0;
-        for (int i = 0; i < numCities; i++) {
-            for (int j = i + 1; j < numCities; j++) {
-                bound += 1;  // Placeholder for heuristic calculation
+        // Iterate over all cities to calculate the contribution of unvisited cities
+        for (int city = 0; city < numCities; city++) {
+            if (!node.visited[city]) {
+                // Find the two smallest edges for this unvisited city
+                double firstMin = Double.MAX_VALUE, secondMin = Double.MAX_VALUE;
+                for (int otherCity = 0; otherCity < numCities; otherCity++) {
+                    if (city != otherCity) {
+                        double edgeCost = distanceMatrix[city][otherCity];
+                        if (edgeCost < firstMin) {
+                            secondMin = firstMin;
+                            firstMin = edgeCost;
+                        } else if (edgeCost < secondMin) {
+                            secondMin = edgeCost;
+                        }
+                    }
+                }
+                // Add half of the smallest two edges (heuristic)
+                bound += (firstMin + secondMin) / 2;
             }
         }
         return bound;
     }
 
-    // Function to generate all the children of a given node
+    /**
+     * Generate child nodes for the current node by exploring all unvisited cities.
+     *
+     * @param parent         The current node
+     * @param numCities      Total number of cities
+     * @param distanceMatrix Adjacency matrix with distances between cities
+     * @return List of child nodes
+     */
     public List<Node> generateChildren(Node parent, int numCities, double[][] distanceMatrix) {
         List<Node> children = new ArrayList<>();
+        int currentCity = parent.path[parent.pathLength - 1]; // Current city is the last city in the path
+
+        // Try visiting all unvisited cities
         for (int city = 0; city < numCities; city++) {
-            if (!parent.visited[city]) {  // If the city hasn't been visited yet
+            if (!parent.visited[city]) {
                 Node child = new Node(numCities);
-                System.arraycopy(parent.path, 0, child.path, 0, numCities);
+                // Copy path and visited state from parent
+                System.arraycopy(parent.path, 0, child.path, 0, parent.pathLength);
                 System.arraycopy(parent.visited, 0, child.visited, 0, numCities);
-                
-                child.path[parent.path.length] = city; // Add the city to the path
-                child.visited[city] = true; // Mark the city as visited
-                child.cost = parent.cost + distanceMatrix[parent.path[parent.path.length - 1]][city]; // Update cost
-                child.bound = calculateLowerBound(child, numCities); // Update the bound for the child node
-                children.add(child);
+
+                // Update the child's path and visited array
+                child.path[parent.pathLength] = city;
+                child.pathLength = parent.pathLength + 1;
+                child.visited[city] = true;
+
+                // Update the cost and calculate the bound
+                child.cost = parent.cost + distanceMatrix[currentCity][city];
+                child.bound = calculateLowerBound(child, numCities, distanceMatrix);
+
+                children.add(child); // Add child to the list
             }
         }
         return children;
     }
 
-    // Function to check if the given node is a leaf node (all cities are visited)
+    /**
+     * Check if the node is a leaf node (all cities are visited).
+     *
+     * @param node      Current node
+     * @param numCities Total number of cities
+     * @return True if all cities are visited, otherwise false
+     */
     public boolean isLeafNode(Node node, int numCities) {
-        for (int i = 1; i < numCities; i++) {
-            if (!node.visited[i]) {
-                return false;
-            }
-        }
-        return true;
+        return node.pathLength == numCities; // Leaf if all cities are visited
     }
 
     public static void main(String[] args) {
-        int numCities = 4;  // Example with 4 cities
+        int numCities = 4; // Example with 4 cities
         double[][] distanceMatrix = {
             {0, 10, 15, 20},
             {10, 0, 35, 25},
@@ -79,30 +109,48 @@ public class TSPBranchAndBound {
         };
 
         TSPBranchAndBound tsp = new TSPBranchAndBound();
-        Node startNode = tsp.generateStartNode(numCities);
-        double bestCost = Double.MAX_VALUE;
-        
+
+        // Initialize the starting node
+        Node startNode = new Node(numCities);
+        startNode.visited[0] = true; // Start from city 0
+        startNode.path[0] = 0;       // Path starts from city 0
+        startNode.bound = tsp.calculateLowerBound(startNode, numCities, distanceMatrix);
+
+        double bestCost = Double.MAX_VALUE; // To track the minimum cost
+        int[] bestPath = null;              // To track the optimal path
+
+        // Priority queue to explore nodes with the lowest bound first
         PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingDouble(n -> n.bound));
         pq.add(startNode);
-        
+
+        // Branch and Bound algorithm
         while (!pq.isEmpty()) {
-            Node node = pq.poll();
-            
+            Node node = pq.poll(); // Get the node with the lowest bound
+
+            // Prune nodes with bounds worse than the current best cost
+            if (node.bound >= bestCost) continue;
+
+            // If the node is a leaf, calculate its cost and update the best cost if necessary
             if (tsp.isLeafNode(node, numCities)) {
-                // Check if the leaf node has a better cost
+                node.cost += distanceMatrix[node.path[node.pathLength - 1]][0]; // Add cost to return to start
                 if (node.cost < bestCost) {
                     bestCost = node.cost;
+                    bestPath = Arrays.copyOf(node.path, numCities + 1); // Save the best path
+                    bestPath[numCities] = 0; // Complete the cycle
                 }
             } else {
+                // Generate and process child nodes
                 List<Node> children = tsp.generateChildren(node, numCities, distanceMatrix);
                 for (Node child : children) {
-                    if (child.bound < bestCost) {  // Pruning
+                    if (child.bound < bestCost) { // Prune nodes with bad bounds
                         pq.add(child);
                     }
                 }
             }
         }
-        
+
+        // Output the best cost and path found
         System.out.println("Best cost found: " + bestCost);
+        System.out.println("Best path: " + Arrays.toString(bestPath));
     }
 }
