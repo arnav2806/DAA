@@ -2,106 +2,143 @@ import java.util.*;
 
 public class Main {
 
-        //PART A : QUICKSORT IMPLEMENTATION AGAINST BESTCASE AND WORSTCASE
-        public static int partition(int[] array,int low,int high){
-            int pivot = array[high];
-            int i = low-1;
-            for(int j=low;j<high;j++){
-                if(array[j] <= pivot){
-                    i=i+1;
-                    swap(array,i,j);
-                }
-            }
-            swap(array,i+1,high);
-            return i+1;
-        }
+    // PART A: QuickSort Implementation (Best-case and Worst-case)
 
-        public static void swap(int[] array,int i,int j){
-            int temp = array[i];
-            array[i] = array[j];
-            array[j]  = temp;
-        }
+    // Partition function used in QuickSort to partition the array around a pivot
+    public static int partition(int[] array, int low, int high) {
+        int pivot = array[high]; // Set the pivot to the last element
+        int i = low - 1;  // Initialize i to one before the low index
 
-        public static void quickSort(int[] array,int low,int high){
-            if(low < high){
-                int partition_index = partition(array,low,high);
-                quickSort(array,low,partition_index-1);
-                quickSort(array,partition_index+1,high);
+        // Iterate through the array and swap elements less than or equal to pivot
+        for (int j = low; j < high; j++) {
+            if (array[j] <= pivot) {
+                i = i + 1;
+                swap(array, i, j); // Swap elements
             }
         }
+        swap(array, i + 1, high); // Swap the pivot to the correct position
+        return i + 1; // Return the partition index
+    }
 
-        public static int[] generateBestCase(int n){
-            int[] best_case = new int[n];
-            for(int i=0;i<n;i++){
-                best_case[i] = i;
-            }
-            return best_case;
+    // Swap helper function to swap two elements in the array
+    public static void swap(int[] array, int i, int j) {
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
+    // QuickSort function to recursively sort the array using the partition function
+    public static void quickSort(int[] array, int low, int high) {
+        if (low < high) {
+            int partitionIndex = partition(array, low, high); // Get the partition index
+            quickSort(array, low, partitionIndex - 1); // Recursively sort the left part
+            quickSort(array, partitionIndex + 1, high); // Recursively sort the right part
+        }
+    }
+
+    // Best-case input generator for QuickSort (sorted array)
+    public static int[] generateBestCase(int n) {
+        int[] bestCase = new int[n];
+        for (int i = 0; i < n; i++) {
+            bestCase[i] = i; // Sorted array
+        }
+        return bestCase;
+    }
+
+    // Worst-case input generator for QuickSort (reverse sorted array)
+    public static int[] generateWorstCase(int n) {
+        int[] worstCase = new int[n];
+        for (int i = 0; i < n; i++) {
+            worstCase[i] = n - 1 - i; // Reverse sorted array
+        }
+        return worstCase;
+    }
+
+    // Function to compare QuickSort's time performance on best-case and worst-case input
+    public static void compareTime(int n) {
+        int[] bestCase = generateBestCase(n);
+        int[] worstCase = generateWorstCase(n);
+
+        // Measure time for best-case scenario
+        long startTime = System.nanoTime();
+        quickSort(bestCase, 0, bestCase.length - 1);
+        long endTime = System.nanoTime();
+        long bestCaseTime = endTime - startTime;
+
+        // Measure time for worst-case scenario
+        startTime = System.nanoTime();
+        quickSort(worstCase, 0, worstCase.length - 1);
+        endTime = System.nanoTime();
+        long worstCaseTime = endTime - startTime;
+
+        // Print the time taken for both cases
+        System.out.println("Best case time : " + bestCaseTime);
+        System.out.println("Worst case time : " + worstCaseTime);
+    }
+
+    // PART B: TSP Implementation (Genetic Algorithm Mutation Example)
+
+    // Function to generate a random chromosome (permutation of cities)
+    public static List<Integer> generateChromosome(int n) {
+        List<Integer> chromosome = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            chromosome.add(i); // Add city indices
+        }
+        Collections.shuffle(chromosome); // Shuffle to create a random chromosome
+        return chromosome;
+    }
+
+    // Function to mutate a chromosome by swapping two cities
+    public static List<Integer> mutateChromosome(List<Integer> chromosome) {
+        Random rand = new Random();
+
+        int index1 = rand.nextInt(chromosome.size()); // Random index 1
+        int index2 = rand.nextInt(chromosome.size()); // Random index 2
+
+        // Ensure index1 is not equal to index2
+        while (index1 == index2) {
+            index2 = rand.nextInt(chromosome.size());
         }
 
-        public static int[] generateWorstCase(int n){
-            int[] worst_case = new int[n];
-            for(int i=0;i<n;i++){
-                worst_case[i] = n-1-i;
-            }
-            return worst_case;
-        }
+        // Swap the two cities (genes) in the chromosome
+        Collections.swap(chromosome, index1, index2);
+        return chromosome;
+    }
 
-        public static void compareTime(int n){
-            int[] bestcase = generateBestCase(n);
-            int[] worstcase = generateWorstCase(n);
+    // Main function to demonstrate the functionality of QuickSort and TSP mutation
+    public static void main(String[] args) {
+        int n = 500; // Number of elements for QuickSort
+        System.out.println("QuickSort time comparison : ");
+        compareTime(n); // Compare best-case and worst-case QuickSort times
 
-            //calculating best_case time
-            long start_time = System.nanoTime();
-            quickSort(bestcase,0,bestcase.length-1);
-            long end_time = System.nanoTime();
-            long bestCaseTime = end_time - start_time;
+        System.out.println("TSP mutation example : ");
+        int TSPCities = 10; // Number of cities for the TSP problem
+        List<Integer> chromosome = generateChromosome(TSPCities); // Generate random chromosome
+        System.out.println("Original chromosome : " + chromosome);
 
-            //calculating worst_case time
-            start_time = System.nanoTime();
-            quickSort(worstcase,0,worstcase.length-1);
-            end_time = System.nanoTime();
-            long worstCaseTime = end_time - start_time;
-
-            System.out.println("Best case time : " + bestCaseTime);
-            System.out.println("Worst case time : " + worstCaseTime);
-        }
-
-
-        //PART B : TSP IMPLEMENTATION
-        public static List<Integer> generate_chromosome(int n){
-            List<Integer> chromosome = new ArrayList<>();
-            for(int i=0;i<n;i++){
-                chromosome.add(i);
-            }
-            Collections.shuffle(chromosome);
-            return chromosome;
-        }
-
-        public static List<Integer> mutate_chromosome(List<Integer> chromosome) {
-            Random rand = new Random();
-
-            int index1 = rand.nextInt(chromosome.size());
-            int index2 = rand.nextInt(chromosome.size());
-
-            while(index1 == index2){
-                index2 = rand.nextInt(chromosome.size());
-            }
-
-            Collections.swap(chromosome,index1,index2);
-            return chromosome;
-        }
-
-        public static void main(String[] args){
-            int n = 500;
-            System.out.println("QuickSort time comparison : ");
-            compareTime(n);
-
-            System.out.println("TSP mutation exmaple : ");
-            int TSP_cities = 10;
-            List<Integer> chromosome = generate_chromosome(TSP_cities);
-            System.out.println("Original chromosome : " + chromosome);
-
-            List<Integer> mutated_chromosome = mutate_chromosome(chromosome);
-            System.out.println("Mutated chromosome : " + mutated_chromosome);
-        }
+        List<Integer> mutatedChromosome = mutateChromosome(chromosome); // Mutate the chromosome
+        System.out.println("Mutated chromosome : " + mutatedChromosome);
+    }
 }
+/*Time Complexity:
+QuickSort:
+Partition Function: The partition function iterates through the array from low to high once, making its time complexity O(n).
+QuickSort: In the worst case, QuickSort performs n recursive calls with each call working on n-1 elements (in case of sorted or reverse sorted arrays), which leads to a time complexity of O(n^2).
+In the best case, when the pivot splits the array in half, the recursion depth is O(log n), and each partition takes O(n), so the time complexity is O(n log n).
+TSP Mutation:
+Chromosome Generation: The generateChromosome method creates a list of integers from 0 to n-1 and shuffles it. This takes O(n) for creating the list and O(n) for shuffling, resulting in O(n) time complexity.
+Mutation: The mutation function selects two random indices and swaps the cities. The time complexity for this operation is O(1), as it involves only constant-time operations.
+Space Complexity:
+QuickSort:
+The space complexity is primarily determined by the recursion depth in QuickSort. In the worst case (unbalanced partitioning), the recursion depth can be O(n). Therefore, the space complexity is O(n) due to recursion.
+The array itself takes O(n) space.
+TSP Mutation:
+The space complexity for generating a chromosome and performing mutation is O(n), where n is the number of cities, because the chromosome list stores n elements.
+Summary:
+QuickSort Time Complexity:
+Best case: O(n log n)
+Worst case: O(n^2)
+Space complexity: O(n) (due to recursion and the input array)
+TSP Mutation Time Complexity:
+Time complexity: O(n) for generating the chromosome and O(1) for mutation.
+Space complexity: O(n) to store the chromosome.*/
