@@ -9,7 +9,7 @@ public class Main {
         int leftArraySize = mid - low + 1; // Size of the left sub-array
         int rightArraySize = high - mid;  // Size of the right sub-array
 
-        // Create temporary arrays
+        // Create temporary arrays to hold the values
         int[] left = new int[leftArraySize];
         int[] right = new int[rightArraySize];
 
@@ -27,9 +27,9 @@ public class Main {
         // Merge the temporary arrays into the original array
         while (i < leftArraySize && j < rightArraySize) {
             if (left[i] <= right[j]) {
-                array[k++] = left[i++];
+                array[k++] = left[i++]; // Copy smaller element from left
             } else {
-                array[k++] = right[j++];
+                array[k++] = right[j++]; // Copy smaller element from right
             }
         }
 
@@ -47,14 +47,14 @@ public class Main {
     // Recursive function to perform merge sort
     public static void mergesort(int[] array, int low, int high) {
         if (low < high) {
-            int mid = (low + high) / 2; // Find the middle point
-            mergesort(array, low, mid); // Sort the left half
-            mergesort(array, mid + 1, high); // Sort the right half
-            merge(array, low, mid, high); // Merge the two halves
+            int mid = (low + high) / 2; // Find the middle point of the array
+            mergesort(array, low, mid); // Recursively sort the left half
+            mergesort(array, mid + 1, high); // Recursively sort the right half
+            merge(array, low, mid, high); // Merge the sorted halves
         }
     }
 
-    // Function to generate the best-case input for merge sort
+    // Function to generate the best-case input for merge sort (sorted array)
     public static int[] generateBestCase(int n) {
         int[] best_case = new int[n];
         for (int i = 0; i < n; i++) {
@@ -63,7 +63,7 @@ public class Main {
         return best_case;
     }
 
-    // Function to generate the worst-case input for merge sort
+    // Function to generate the worst-case input for merge sort (reverse sorted array)
     public static int[] generateWorstCase(int n) {
         int[] worst_case = new int[n];
         for (int i = 0; i < n; i++) {
@@ -79,13 +79,13 @@ public class Main {
 
         // Measure time for best-case input
         long start_time = System.nanoTime();
-        mergesort(bestcase, 0, bestcase.length - 1);
+        mergesort(bestcase, 0, bestcase.length - 1); // Perform merge sort on best-case
         long end_time = System.nanoTime();
         long best_caseTime = end_time - start_time;
 
         // Measure time for worst-case input
         start_time = System.nanoTime();
-        mergesort(worstcase, 0, worstcase.length - 1);
+        mergesort(worstcase, 0, worstcase.length - 1); // Perform merge sort on worst-case
         end_time = System.nanoTime();
         long worst_caseTime = end_time - start_time;
 
@@ -95,27 +95,27 @@ public class Main {
 
     // PART B: TSP CROSSOVER IMPLEMENTATION
 
-    // Function to generate a random chromosome (route)
+    // Function to generate a random chromosome (route) of cities
     public static List<Integer> generate_chromosome(int n) {
         List<Integer> chromosome = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             chromosome.add(i); // Add cities in sequential order
         }
-        Collections.shuffle(chromosome); // Shuffle to create a random order
+        Collections.shuffle(chromosome); // Shuffle the order to randomize the route
         return chromosome;
     }
 
-    // Function to perform crossover between two chromosomes (parents)
+    // Function to perform crossover between two chromosomes (parents) to create offspring
     public static List<Integer> crossover_chromosome(List<Integer> parent1, List<Integer> parent2) {
         Random rand = new Random();
         int crossoverPoint = rand.nextInt(parent1.size()); // Random crossover point
 
-        // Create offspring by inheriting up to the crossover point from parent1
+        // Create offspring by inheriting cities from parent1 up to the crossover point
         List<Integer> offspring = new ArrayList<>(parent1.subList(0, crossoverPoint));
 
         // Add remaining cities from parent2, ensuring no duplicates
         for (int city : parent2) {
-            if (!offspring.contains(city)) {
+            if (!offspring.contains(city)) {  // Only add cities not yet in the offspring
                 offspring.add(city);
             }
         }
@@ -123,10 +123,10 @@ public class Main {
         return offspring;
     }
 
-    // Main function
+    // Main function to test the merge sort and TSP crossover
     public static void main(String[] args) {
         // Merge Sort Time Comparison
-        int n = 500; // Size of the array
+        int n = 500; // Size of the array for time comparison
         System.out.println("Merge sort time comparison:");
         compareTime(n);
 
@@ -143,3 +143,21 @@ public class Main {
         System.out.println("Offspring created from Parent 1 & Parent 2: " + offspring);
     }
 }
+
+/*
+Time and Space Complexity:
+
+1. Merge Sort:
+   - Time Complexity: O(n log n)
+     - The merge sort splits the array into halves recursively (log n splits), and each split takes O(n) time to merge the arrays.
+     - Thus, the overall time complexity is O(n log n).
+   - Space Complexity: O(n)
+     - The space complexity is O(n) because temporary arrays are used during the merge process.
+
+2. TSP Crossover:
+   - Time Complexity: O(n)
+     - The time complexity of the crossover operation is O(n) because it involves scanning the parents and creating a new offspring of size n.
+   - Space Complexity: O(n)
+     - The space complexity is O(n) due to the space used for storing the offspring list.
+
+*/
