@@ -1,16 +1,40 @@
 public class Main {
 
+    /**
+     * Function to calculate the maximum profit using the 0/1 Knapsack algorithm.
+     * 
+     * @param capacity The maximum weight capacity of the knapsack.
+     * @param weights  Array of weights of the items.
+     * @param profits  Array of profits of the items.
+     * @param n        Total number of items.
+     * @return The maximum profit achievable.
+     * 
+     * Time Complexity: O(n * capacity)
+     * - Outer loop runs 'n' times (number of items).
+     * - Inner loop runs 'capacity' times (maximum weight capacity).
+     * - Hence, the overall complexity is O(n * capacity).
+     * 
+     * Space Complexity: O(n * capacity)
+     * - A 2D DP table of size (n+1) x (capacity+1) is used.
+     * - Therefore, space complexity is proportional to the size of the table.
+     */
     public static int knapsack(int capacity, int[] weights, int[] profits, int n) {
-        // Create a DP table
+        // Create a DP table where dp[i][w] represents the maximum profit that can be
+        // achieved with the first 'i' items and a knapsack capacity of 'w'.
         int[][] dp = new int[n + 1][capacity + 1];
 
-        // Build table dp[][] in a bottom-up manner
-        for (int i = 1; i <= n; i++) {
-            for (int w = 1; w <= capacity; w++) {
-                // If the current item's weight is less than or equal to capacity
+        // Build the dp table in a bottom-up manner
+        for (int i = 1; i <= n; i++) { // Loop through each item
+            for (int w = 1; w <= capacity; w++) { // Loop through each capacity from 1 to max
+                // If the current item's weight is less than or equal to the current capacity
                 if (weights[i - 1] <= w) {
-                    dp[i][w] = Math.max(dp[i - 1][w], profits[i - 1] + dp[i - 1][w - weights[i - 1]]);
+                    // Include the item and take the maximum of including or excluding it
+                    dp[i][w] = Math.max(
+                        dp[i - 1][w], // Exclude the item
+                        profits[i - 1] + dp[i - 1][w - weights[i - 1]] // Include the item
+                    );
                 } else {
+                    // If the item cannot be included, inherit the value from the previous item
                     dp[i][w] = dp[i - 1][w];
                 }
             }
@@ -21,13 +45,16 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int m = 15; // Maximum weight capacity
-        int[] weights = {2, 4, 6, 9};
-        int[] profits = {10, 10, 12, 18};
-        int n = weights.length;
+        // Input values
+        int m = 15; // Maximum weight capacity of the knapsack
+        int[] weights = {2, 4, 6, 9}; // Weights of the items
+        int[] profits = {10, 10, 12, 18}; // Profits of the items
+        int n = weights.length; // Number of items
 
+        // Compute the maximum profit
         int maxProfit = knapsack(m, weights, profits, n);
 
+        // Output the result
         System.out.println("Maximum Profit: " + maxProfit);
     }
 }
