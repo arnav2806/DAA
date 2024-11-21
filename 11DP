@@ -4,25 +4,28 @@ import java.util.concurrent.locks.Condition;
 
 public class program_11 {
 
-    private final Lock[] locks;
-    private final Condition[] conditions;
-    private final int numPhilosophers;
+    private final Lock[] locks;            // Array to hold locks for each philosopher's fork
+    private final Condition[] conditions;  // Array of conditions (used to wait/release philosophers)
+    private final int numPhilosophers;     // Number of philosophers (and forks)
 
+    // Constructor initializes the number of philosophers and creates lock/condition objects for each philosopher
     public program_11(int numPhilosophers) {
         this.numPhilosophers = numPhilosophers;
         this.locks = new Lock[numPhilosophers];
         this.conditions = new Condition[numPhilosophers];
 
+        // Initialize locks and conditions for each philosopher
         for (int i = 0; i < numPhilosophers; i++) {
-            locks[i] = new ReentrantLock();
-            conditions[i] = locks[i].newCondition();
+            locks[i] = new ReentrantLock();    // Lock for each fork
+            conditions[i] = locks[i].newCondition();  // Condition for each philosopher to manage waiting
         }
     }
 
-    // Philosopher thread
+    // Philosopher thread that simulates thinking and eating behavior
     class Philosopher extends Thread {
-        private final int id;
+        private final int id;   // Philosopher's ID
 
+        // Constructor to initialize the philosopher's ID
         public Philosopher(int id) {
             this.id = id;
         }
@@ -30,68 +33,87 @@ public class program_11 {
         @Override
         public void run() {
             while (true) {
-                think();
-                eat();
+                think();   // Philosopher thinks
+                eat();     // Philosopher eats
             }
         }
 
+        // Simulate philosopher thinking
         private void think() {
             System.out.println("Philosopher " + id + " is thinking.");
             try {
-                Thread.sleep((long) (Math.random() * 1000));
+                Thread.sleep((long) (Math.random() * 1000));  // Random sleep to simulate thinking time
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread().interrupt();  // Handle interrupt
             }
         }
 
+        // Simulate philosopher eating by acquiring forks (locks)
         private void eat() {
-            // Try to acquire locks for both forks (left and right)
-            Lock leftFork = locks[id];
-            Lock rightFork = locks[(id + 1) % numPhilosophers];
+            // Acquire locks for both forks (left and right)
+            Lock leftFork = locks[id];                // Left fork (lock for philosopher)
+            Lock rightFork = locks[(id + 1) % numPhilosophers];  // Right fork (next philosopher)
 
-            // To avoid deadlock, try to acquire locks in a fixed order
+            // To avoid deadlock, philosophers acquire locks in a fixed order
             if (id % 2 == 0) {
-                leftFork.lock();
+                leftFork.lock();  // Lock left fork
                 try {
-                    rightFork.lock();
+                    rightFork.lock();  // Lock right fork
                     try {
                         System.out.println("Philosopher " + id + " is eating.");
-                        Thread.sleep((long) (Math.random() * 1000));
+                        Thread.sleep((long) (Math.random() * 1000));  // Simulate eating
                     } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                        Thread.currentThread().interrupt();  // Handle interrupt
                     } finally {
-                        rightFork.unlock();
+                        rightFork.unlock();  // Unlock right fork after eating
                     }
                 } finally {
-                    leftFork.unlock();
+                    leftFork.unlock();  // Unlock left fork after eating
                 }
             } else {
-                rightFork.lock();
+                rightFork.lock();  // Lock right fork for odd-numbered philosophers
                 try {
-                    leftFork.lock();
+                    leftFork.lock();  // Lock left fork
                     try {
                         System.out.println("Philosopher " + id + " is eating.");
-                        Thread.sleep((long) (Math.random() * 1000));
+                        Thread.sleep((long) (Math.random() * 1000));  // Simulate eating
                     } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                        Thread.currentThread().interrupt();  // Handle interrupt
                     } finally {
-                        leftFork.unlock();
+                        leftFork.unlock();  // Unlock left fork after eating
                     }
                 } finally {
-                    rightFork.unlock();
+                    rightFork.unlock();  // Unlock right fork after eating
                 }
             }
         }
     }
 
-    // Main method to create philosophers and start their threads
+    // Main method to create and start philosopher threads
     public static void main(String[] args) {
         int numPhilosophers = 5;  // Example: 5 philosophers
         program_11 dp = new program_11(numPhilosophers);
 
-        // Create philosopher threads
+        // Create philosopher threads and start them
         for (int i = 0; i < numPhilosophers; i++) {
-            dp.new Philosopher(i).start();
+            dp.new Philosopher(i).start();  // Start each philosopher thread
         }
     }
 }
+/*Time Complexity:
+Thinking Phase: The think() method involves a random sleep (Thread.sleep()) between 0 to 1000 milliseconds. The thinking time is random, but it can be considered O(1) in terms of logic complexity, as it's just a sleep operation.
+
+Eating Phase: The eat() method tries to acquire locks for the left and right forks, then performs a random sleep to simulate eating time. In the worst-case scenario:
+
+The philosopher may have to wait to acquire the locks for both forks.
+Acquiring a lock and releasing it are both O(1) operations.
+Therefore, for each philosopher, both thinking and eating phases will have an average time complexity of O(1) per iteration.
+
+Overall Time Complexity: Since the philosophers continuously think and eat, there is no explicit termination. Each philosopher performs an operation (think/eat) in constant time, so the time complexity for each philosopher is O(1). Since there are n philosophers, the overall time complexity for n philosophers remains O(n).
+
+Space Complexity:
+Locks and Conditions: The space complexity is dominated by the number of locks and conditions created for each philosopher. We have two arrays: locks and conditions, each of size numPhilosophers. So, the space complexity for these data structures is O(n), where n is the number of philosophers.
+
+Philosopher Threads: Each philosopher is represented as a thread. In terms of space complexity, creating n threads will consume O(n) space.
+
+Overall Space Complexity: The space complexity is primarily determined by the arrays for locks and conditions and the threads. Hence, the total space complexity is O(n).*/
