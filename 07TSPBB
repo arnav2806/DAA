@@ -1,46 +1,81 @@
 public class program_7 {
-    static final int INF = Integer.MAX_VALUE;
+    static final int INF = Integer.MAX_VALUE; // A constant representing infinity
 
-    public static int TSPBranchBound(int[][] graph){
-        int n = graph.length;
+    /**
+     * Solves the Traveling Salesman Problem (TSP) using a Branch and Bound approach.
+     * 
+     * @param graph 2D array representing the graph's adjacency matrix
+     * @return Minimum cost of visiting all cities and returning to the start
+     */
+    public static int TSPBranchBound(int[][] graph) {
+        int n = graph.length; // Number of cities
 
-        boolean[] visited = new boolean[n];
-        //mark first city visited
-        visited[0] = true;
+        boolean[] visited = new boolean[n]; // Track visited cities
+        visited[0] = true; // Start from the first city and mark it visited
 
-        //intial cost
-        int minCost = TSPUtil(graph,visited,0,n,1,0); //initiated cost as 0 (last parameter in arguement)
+        // Initiate the recursive utility function to compute minimum cost
+        int minCost = TSPUtil(graph, visited, 0, n, 1, 0); // Start at city 0
         return minCost;
     }
 
-    public static int TSPUtil(int[][] graph,boolean[] visited,int currPos,int n,int count,int cost){
-        if(count == n && graph[currPos][0] > 0){
-            return cost + graph[currPos][0];
+    /**
+     * Recursive utility function to calculate the minimum cost for the TSP problem.
+     * 
+     * @param graph    Adjacency matrix of the graph
+     * @param visited  Array to track visited cities
+     * @param currPos  Current city position
+     * @param n        Total number of cities
+     * @param count    Number of cities visited so far
+     * @param cost     Current travel cost
+     * @return Minimum cost to complete the TSP from the current position
+     */
+    public static int TSPUtil(int[][] graph, boolean[] visited, int currPos, int n, int count, int cost) {
+        // Base case: If all cities are visited and there's a return path to the starting city
+        if (count == n && graph[currPos][0] > 0) {
+            return cost + graph[currPos][0]; // Add cost of returning to the start
         }
 
-        int minCost = INF;
+        int minCost = INF; // Initialize the minimum cost to infinity
 
-        for(int i=0;i<n;i++){
-            if(!visited[i] && graph[currPos][i] > 0){
-                visited[i] = true;
-                int tempCost = TSPUtil(graph,visited,i,n,count++,cost + graph[currPos][i]);
-                minCost = Math.min(minCost,tempCost);
-                //backtrack
+        // Explore all possible cities to visit next
+        for (int i = 0; i < n; i++) {
+            // Check if the city is not visited and there's a path from the current city
+            if (!visited[i] && graph[currPos][i] > 0) {
+                visited[i] = true; // Mark the city as visited
+
+                // Recur to the next city and update the cost
+                int tempCost = TSPUtil(graph, visited, i, n, count + 1, cost + graph[currPos][i]);
+                minCost = Math.min(minCost, tempCost); // Update the minimum cost
+
+                // Backtrack: Unmark the city as visited for the next iteration
                 visited[i] = false;
             }
         }
-        return minCost;
+        return minCost; // Return the minimum cost for the current branch
     }
 
-    public static void main(String[] args){
-        int[][] graph = {{0,10,15,20},
-                         {5,0,9,10},
-                         {6,13,0,12},
-                         {8,8,9,0},
-                        };
+    public static void main(String[] args) {
+        // Adjacency matrix representation of the graph
+        int[][] graph = {
+            {0, 10, 15, 20},
+            {5, 0, 9, 10},
+            {6, 13, 0, 12},
+            {8, 8, 9, 0},
+        };
 
+        // Compute and print the minimum cost
         int result = TSPBranchBound(graph);
-
         System.out.println("The total minimum cost extracted from this algorithm is : " + result);
     }
+
+    /**
+     * Time Complexity:
+     * - The algorithm explores all permutations of cities, leading to O(N!) time complexity.
+     * - For every city, it checks all unvisited cities recursively.
+     * 
+     * Space Complexity:
+     * - The space complexity is O(N) for the `visited` array.
+     * - The recursion stack depth can reach O(N) in the worst case.
+     * - Therefore, the total space complexity is O(N).
+     */
 }
