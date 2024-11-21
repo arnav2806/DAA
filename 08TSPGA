@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 public class program_8 {
+    // Distance matrix representing the cost between cities
     static int[][] distances = {
             {0, 10, 15, 20},
             {10, 0, 35, 25},
@@ -11,49 +12,71 @@ public class program_8 {
             {20, 25, 30, 0}
     };
 
-    static int populationSize = 50;
-    static int generations = 100;
-    static double mutationRate = 0.1;
+    // Genetic Algorithm parameters
+    static int populationSize = 50; // Number of routes in the population
+    static int generations = 100; // Number of generations to evolve
+    static double mutationRate = 0.1; // Probability of mutation
 
+    /**
+     * Initializes a random route (permutation of cities).
+     * @param n Number of cities
+     * @return A random route
+     */
     public static List<Integer> initializeRoute(int n) {
         List<Integer> route = new ArrayList<>();
-        for (int i = 0; i < n; i++) route.add(i);
-        Collections.shuffle(route);
+        for (int i = 0; i < n; i++) route.add(i); // Add all city indices
+        Collections.shuffle(route); // Randomly shuffle to create a random route
         return route;
     }
 
+    /**
+     * Calculates the total cost of a given route.
+     * @param route List of cities representing the route
+     * @return Total travel cost for the route
+     */
     public static int calculateCost(List<Integer> route) {
         int cost = 0;
         for (int i = 0; i < route.size() - 1; i++) {
-            cost += distances[route.get(i)][route.get(i + 1)];
+            cost += distances[route.get(i)][route.get(i + 1)]; // Add cost between consecutive cities
         }
-        cost += distances[route.get(route.size() - 1)][route.get(0)]; // Return to start
+        cost += distances[route.get(route.size() - 1)][route.get(0)]; // Add cost of returning to the start
         return cost;
     }
 
+    /**
+     * Generates the initial population of random routes.
+     * @param n Number of cities
+     * @return List of routes
+     */
     public static List<List<Integer>> generatePopulation(int n) {
         List<List<Integer>> population = new ArrayList<>();
         for (int i = 0; i < populationSize; i++) {
-            population.add(initializeRoute(n));
+            population.add(initializeRoute(n)); // Add random routes
         }
         return population;
     }
 
+    /**
+     * Performs crossover between two parent routes to produce a child route.
+     * @param parent1 First parent route
+     * @param parent2 Second parent route
+     * @return A child route
+     */
     public static List<Integer> crossover(List<Integer> parent1, List<Integer> parent2) {
         int n = parent1.size();
-        List<Integer> child = new ArrayList<>(Collections.nCopies(n, -1));
+        List<Integer> child = new ArrayList<>(Collections.nCopies(n, -1)); // Initialize child with placeholder values
         Random rand = new Random();
 
-        // Select crossover range
+        // Select a random crossover range
         int start = rand.nextInt(n);
         int end = rand.nextInt(n - start) + start;
 
-        // Copy from parent1
+        // Copy the selected range from parent1
         for (int i = start; i <= end; i++) {
             child.set(i, parent1.get(i));
         }
 
-        // Fill the rest from parent2
+        // Fill remaining cities from parent2, maintaining order
         int current = 0;
         for (int i = 0; i < n; i++) {
             if (!child.contains(parent2.get(i))) {
@@ -65,16 +88,25 @@ public class program_8 {
         return child;
     }
 
+    /**
+     * Mutates a route by swapping two cities with a certain probability.
+     * @param route The route to mutate
+     */
     public static void mutate(List<Integer> route) {
         Random rand = new Random();
         for (int i = 0; i < route.size(); i++) {
-            if (rand.nextDouble() < mutationRate) {
+            if (rand.nextDouble() < mutationRate) { // Apply mutation based on mutation rate
                 int j = rand.nextInt(route.size());
-                Collections.swap(route, i, j);
+                Collections.swap(route, i, j); // Swap two cities
             }
         }
     }
 
+    /**
+     * Finds the best route in the current population based on cost.
+     * @param population List of all routes
+     * @return The route with the minimum cost
+     */
     public static List<Integer> findBest(List<List<Integer>> population) {
         List<Integer> bestRoute = population.get(0);
         int minCost = calculateCost(bestRoute);
@@ -91,30 +123,51 @@ public class program_8 {
     }
 
     public static void main(String[] args) {
-        int n = distances.length;
+        int n = distances.length; // Number of cities
 
+        // Generate the initial population
         List<List<Integer>> population = generatePopulation(n);
 
+        // Evolve the population over generations
         for (int gen = 0; gen < generations; gen++) {
             List<List<Integer>> newPopulation = new ArrayList<>();
 
             for (int i = 0; i < populationSize; i++) {
                 Random rand = new Random();
+                // Select two parents randomly
                 List<Integer> parent1 = population.get(rand.nextInt(populationSize));
                 List<Integer> parent2 = population.get(rand.nextInt(populationSize));
 
+                // Create a child through crossover and mutate it
                 List<Integer> child = crossover(parent1, parent2);
                 mutate(child);
-                newPopulation.add(child);
+                newPopulation.add(child); // Add the child to the new population
             }
 
+            // Replace the old population with the new one
             population = newPopulation;
         }
 
+        // Find and display the best route and its cost
         List<Integer> bestRoute = findBest(population);
         int bestCost = calculateCost(bestRoute);
 
         System.out.println("Best route: " + bestRoute);
         System.out.println("Cost of best route: " + bestCost);
     }
+
+    /**
+     * Time Complexity:
+     * - Population initialization: O(populationSize × n), where n is the number of cities.
+     * - Generations: Each generation involves crossover, mutation, and fitness evaluation.
+     *   - Crossover: O(n) for each route, total O(populationSize × n).
+     *   - Mutation: O(n) for each route, total O(populationSize × n).
+     *   - Fitness evaluation: O(populationSize × n).
+     * - Total: O(generations × populationSize × n).
+
+     * Space Complexity:
+     * - Storage for population: O(populationSize × n).
+     * - Temporary lists for crossover and mutation: O(n).
+     * - Total: O(populationSize × n).
+     */
 }
