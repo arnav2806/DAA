@@ -1,6 +1,11 @@
 public class Main {
 
-    // Method to print the board
+    /**
+     * Prints the board configuration with queens placed.
+     * 
+     * @param board 2D array representing the chessboard.
+     * @param n     Size of the chessboard.
+     */
     static void printSolution(int board[][], int n) {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -10,62 +15,82 @@ public class Main {
         }
     }
 
-    // Method to check if a queen can be placed at board[row][col]
+    /**
+     * Checks if a queen can be safely placed at board[row][col].
+     * 
+     * @param board 2D array representing the chessboard.
+     * @param row   Row index.
+     * @param col   Column index.
+     * @param n     Size of the chessboard.
+     * @return True if safe, False otherwise.
+     */
     static boolean isSafe(int board[][], int row, int col, int n) {
-        // Check column
+        // Check this column in all previous rows
         for (int i = 0; i < row; i++) {
             if (board[i][col] == 1) {
                 return false;
             }
         }
 
-        // Check upper-left diagonal
+        // Check the upper-left diagonal
         for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
             if (board[i][j] == 1) {
                 return false;
             }
         }
 
-        // Check upper-right diagonal
+        // Check the upper-right diagonal
         for (int i = row, j = col; i >= 0 && j < n; i--, j++) {
             if (board[i][j] == 1) {
                 return false;
             }
         }
 
-        return true;
+        return true; // Safe to place the queen
     }
 
-    // Method to solve N Queens problem using Backtracking
+    /**
+     * Recursive utility function to solve the N Queens problem.
+     * 
+     * @param board 2D array representing the chessboard.
+     * @param row   Current row being processed.
+     * @param n     Size of the chessboard.
+     * @return True if a solution is found, False otherwise.
+     */
     static boolean solveNQueensUtil(int board[][], int row, int n) {
-        // If all queens are placed
+        // Base case: If all queens are placed, return true
         if (row >= n) {
             return true;
         }
 
-        // Try placing this queen in all columns one by one
+        // Try placing the queen in all columns of the current row
         for (int col = 0; col < n; col++) {
+            // Check if placing the queen here is safe
             if (isSafe(board, row, col, n)) {
-                // Place queen
+                // Place the queen
                 board[row][col] = 1;
 
-                // Recur to place rest of the queens
+                // Recur to place the next queen
                 if (solveNQueensUtil(board, row + 1, n)) {
                     return true;
                 }
 
-                // If placing queen in board[row][col] doesn't lead to a solution, backtrack
-                board[row][col] = 0; // Remove queen (backtrack)
+                // If placing queen doesn't lead to a solution, backtrack
+                board[row][col] = 0; // Remove the queen
             }
         }
 
-        // If the queen can not be placed in any column in this row, return false
+        // If no column leads to a solution in this row, return false
         return false;
     }
 
-    // Solves the N Queens problem using Backtracking. It mainly uses solveNQueensUtil()
+    /**
+     * Main function to solve the N Queens problem for a given board size.
+     * 
+     * @param n Size of the chessboard.
+     */
     static void solveNQueens(int n) {
-        int board[][] = new int[n][n];
+        int board[][] = new int[n][n]; // Initialize the chessboard with 0s
 
         // Start solving from the first row
         if (!solveNQueensUtil(board, 0, n)) {
@@ -78,16 +103,27 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int[] sizes = {4, 5, 6, 7, 8};
+        int[] sizes = {4, 5, 6, 7, 8}; // Array of board sizes to solve for
 
         for (int n : sizes) {
-            long startTime = System.nanoTime();
+            long startTime = System.nanoTime(); // Record start time
             System.out.println("Solving for " + n + " queens:");
-            solveNQueens(n);
-            long endTime = System.nanoTime();
-            long duration = endTime - startTime;
+            solveNQueens(n); // Solve the problem for the current size
+            long endTime = System.nanoTime(); // Record end time
+            long duration = endTime - startTime; // Calculate execution time
             System.out.println("Time taken for " + n + " queens: " + duration + " nanoseconds\n");
         }
     }
-}
 
+    /**
+     * Time Complexity:
+     * - The worst-case time complexity is O(N!), where N is the size of the board.
+     * - This is because there are N choices for placing the first queen, (N-1) for
+     *   the second, (N-2) for the third, and so on, leading to factorial growth.
+     * 
+     * Space Complexity:
+     * - The space complexity is O(N^2) for the board, as it uses a 2D array of size NxN.
+     * - Additionally, the recursion stack can go up to N levels in the worst case, 
+     *   making the auxiliary space complexity O(N).
+     */
+}
